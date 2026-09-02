@@ -1,0 +1,1382 @@
+// Define the column classes
+@use 'sass:math';
+@use 'sass:list';
+
+// GLOBAL STYLES
+
+//font
+//Taviraj
+@import url('https://fonts.googleapis.com/css2?family=Taviraj:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+//Tiny5
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+//Ojuju
+@import url('https://fonts.googleapis.com/css2?family=Ojuju:wght@200..800&display=swap');
+
+//NICOMOJI
+@font-face {
+    font-family: 'Nico Moji';
+    src: url('/fonts/NicoMoji-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+//RUBIKBURNED
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Burned&display=swap');
+//GEOSTAR FILL
+@import url('https://fonts.googleapis.com/css2?family=Geostar+Fill&display=swap');
+//---
+
+$green: #00FF2F;
+$blue: #02A9EA;
+$yellow: #FAFF00;
+$pink: #FF008C;
+$black: #000300;
+$white: #FFFEFF;
+$grey: #D9D9D9;
+
+// Define breakpoints
+$breakpoints: (
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px
+);
+
+
+@for $i from 1 through 12 {
+    .col-#{$i} {
+        width: percentage(math.div($i, 12));
+        float: left;
+    }
+
+    @each $breakpoint, $value in $breakpoints {
+        @media (max-width: $value) {
+            .col-#{$breakpoint}-#{$i} {
+                width: percentage(math.div($i, 12));
+                float: left;
+            }
+        }
+    }
+}
+
+// Clearfix for rows
+.row::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+// On its own, body's overflow-x is handed up to the viewport and body itself
+// stays visible — which mobile Safari then ignores. Setting it on html too
+// gives body a real clip of its own. `clip` where supported, since unlike
+// `hidden` it does not turn the page into a scroll container.
+html,
+body {
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
+body {
+    font-family: 'Taviraj';
+    margin: 0;
+    padding: 0;
+}
+
+// ---
+
+
+
+
+//HEADER
+.header {
+    padding: 30px 60px;
+    height: 90vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    color: $black;
+
+    & h1 {
+        font-family: "Ojuju", sans-serif;
+        font-size: 54px;
+    }
+
+    & .flacka {
+        position: relative;
+        display: flex;
+
+        &-speech {
+            position: absolute;
+            display: flex;
+            right: 0;
+            transform: translateX(100%);
+            bottom: 0;
+
+            &-txt {
+                font-family: "Taviraj", serif;
+                font-size: 32px;
+                color: #FF0000;
+                text-transform: lowercase;
+                margin: 0;
+            }
+
+            &-dots {
+                font-family: "Taviraj", serif;
+                font-size: 32px;
+                color: #000000;
+                margin: 0;
+                text-transform: lowercase;
+            }
+        }
+    }
+}
+
+
+//POKER
+.pokerextendo {
+    display: flex;
+    justify-content: center;
+}
+
+.poker {
+    border: 3px solid $black;
+    padding: 0px 100px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 54%;
+    position: relative;
+    margin-top: 100px;
+
+    & h2 {
+        font-family: "Taviraj", serif;
+        font-weight: 400;
+        font-size: 46px;
+    }
+
+    &-southside {}
+
+    &-tab {
+        background-color: #F80000;
+        border-bottom: none;
+        border-top-left-radius: 19px;
+        padding: 4px 40px;
+        font-family: "Taviraj", serif;
+        position: absolute;
+        top: -84px;
+        left: -10px;
+        cursor: default;
+        z-index: 1;
+        line-height: 1;
+        color: $white;
+
+        & .span {
+            font-size: 64px;
+        }
+    }
+
+    &-container {
+        display: flex;
+    }
+}
+
+
+//DINERO PAGE
+$silver: #B0B0B0;
+$panel: #BFBEBF;
+$inner: #D9D9D9; // backdrop inside product/thumbnail frames
+$shop-pad-x: 36px; // shared by the shop block and the thumbs hanging off it
+$thumb-height: 96px;
+
+// Layered offset shadow that fakes an extruded / 3D letterform
+@function extrude($color, $depth) {
+    $shadow: (
+    );
+
+@for $i from 1 through $depth {
+    $shadow: list.append($shadow, ($i * 1px) ($i * 1px) 0 $color, comma);
+}
+
+@return $shadow;
+}
+
+.dinero {
+    position: relative;
+    min-height: 100vh;
+    padding: 34px 40px 40px;
+    box-sizing: border-box;
+
+    &-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 40px;
+
+        &-title {
+            margin: 0;
+            line-height: 0;
+            flex: 0 1 auto;
+            min-width: 0;
+
+            & img {
+                display: block;
+                width: clamp(260px, 40vw, 693px);
+                height: auto;
+            }
+        }
+
+        &-nav {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 0 0 auto;
+        }
+
+        &-cart {
+            width: clamp(90px, 11vw, 170px);
+            height: auto;
+            flex: 0 0 auto;
+            image-rendering: pixelated;
+        }
+
+        // Mobile only — hidden until the small breakpoint
+        &-burger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            width: 34px;
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            // Above .offcanvas, so it doubles as the close control
+            position: relative;
+            z-index: 50;
+
+            & span {
+                display: block;
+                width: 100%;
+                height: 3px;
+                background-color: $black;
+                transition: width 0.28s ease, background-color 0.28s ease;
+
+                &:first-child {
+                    height: 8px;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+            }
+
+            // Panel open: the bars go white and stretch to twice their length.
+            // flex-end grows them leftwards so the button keeps its spot at the
+            // edge of the screen instead of pushing past it.
+            &[aria-expanded="true"] span {
+                width: 200%;
+                align-self: flex-end;
+                background-color: $white;
+            }
+        }
+    }
+
+    // The radio keeps its own absolute layout, just re-anchored bottom right
+    & .moveradio {
+        bottom: 96px;
+        margin-right: 0;
+    }
+}
+
+//SHOP
+.shop {
+    position: relative;
+    background-color: $panel;
+    width: clamp(320px, 34vw, 520px);
+    // No bottom padding: the rail ends flush with the block so the
+    // thumbnails can hang off the bottom edge.
+    padding: 60px $shop-pad-x 0;
+    margin-top: 30px;
+    // Reserves room for the thumbnails, which hang outside the block
+    margin-bottom: $thumb-height + 16px;
+    box-sizing: border-box;
+
+    &-main {
+        display: flex;
+        gap: 18px;
+        margin-bottom: 26px;
+
+        // A <button> so the frame and swap icon both open the gallery
+        &-frame {
+            position: relative;
+            border: 2px dashed #000000;
+            background-color: $inner;
+            padding: 6px;
+            flex: 0 0 auto;
+            display: block;
+            font: inherit;
+            color: inherit;
+            text-align: inherit;
+            cursor: pointer;
+
+            &-product {
+                display: block;
+                width: clamp(130px, 15vw, 220px);
+                height: auto;
+            }
+
+            &-swap {
+                position: absolute;
+                top: 8px;
+                right: 6px;
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+                image-rendering: pixelated;
+            }
+        }
+
+        &-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+
+        // "cost" / "size" — hollow labels sitting on the grey panel
+        &-text-label {
+            font-family: 'Geostar Fill', sans-serif;
+            font-size: 20px;
+            text-transform: lowercase;
+            // color: $panel;
+            // -webkit-text-stroke: 1px $white;
+            color: $white;
+            margin: 0 0 4px;
+            width: 100%;
+        }
+
+        &-text-price {
+            font-family: 'Geostar Fill', sans-serif;
+            font-size: 32px;
+            font-weight: 600;
+            // color: red;
+            -webkit-text-stroke: .2px;
+            color: $black;
+            margin: 0;
+        }
+
+        &-text-buy {
+            margin-top: 26px;
+
+            &-buttons {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                column-gap: 8px;
+            }
+
+            &-sizer,
+            &-addtocart {
+                font-family: 'Tiny5', sans-serif;
+                font-size: 18px;
+                background-color: #BDBDBD;
+                border-bottom: 6px solid $black;
+                border-right: 2px solid $black;
+                border-left: 2px solid $black;
+                color: $black;
+                border-top: none;
+                padding: 0px 6px;
+                cursor: crosshair;
+            }
+
+            &-sizer[aria-pressed="true"] {
+                background-color: $black;
+                color: $white;
+            }
+
+            // Sold out: still readable, clearly not pickable
+            &-sizer:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                text-decoration: line-through;
+            }
+
+            &-addtocart {
+                display: block;
+                margin-top: 8px;
+                background-color: #797676;
+                color: $black;
+
+                &:hover {
+                    background-color: $green;
+                }
+            }
+        }
+    }
+
+    // Washing line the thumbnails hang from
+    &-rail {
+        position: relative;
+        height: 4px;
+        background-color: #000000;
+        margin-bottom: 0;
+
+
+        & .slider-control {
+            color: $black;
+        }
+
+    }
+
+    // Hangs off the bottom edge of the block, outside it
+    &-thumbs {
+        position: absolute;
+        top: 100%;
+        left: $shop-pad-x;
+        right: 0;
+        display: flex;
+        gap: 8px;
+        margin-top: 8px; // room for the peg that links each thumb to the rail
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        /* Hide scrollbar for Firefox */
+        -ms-overflow-style: none;
+        /* Hide scrollbar for IE and Edge */
+        cursor: grab;
+
+        &::-webkit-scrollbar {
+            display: none;
+            /* Hide scrollbar for Chrome, Safari and Opera */
+        }
+
+        // Each thumb hangs straight off the rail, uniform size.
+        // A <button> so it can select the product it belongs to.
+        &-item {
+            flex: 0 0 auto;
+            position: relative;
+            // padding: 0;
+            border: none;
+            cursor: pointer;
+
+            &[aria-pressed="true"] {
+                outline: 2px dotted $black;
+                outline-offset: -2px;
+            }
+            aspect-ratio: 1/1;
+            // width: clamp(80px, 9vw, 130px);
+            height: $thumb-height;
+            background-color: $inner;
+            transition: transform 0.2s ease;
+            padding: 4px;
+
+            & img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            // The peg holding it on the line
+            &::before {
+                content: "";
+                position: absolute;
+                top: -8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 8px;
+                height: 8px;
+                background-color: #000000;
+                border-radius: 50%;
+                z-index: 1;
+            }
+
+            &::after {
+                content: "";
+                position: absolute;
+                top: -8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 2px;
+                height: 8px;
+                background-color: #000000;
+                z-index: 0;
+            }
+
+            &:hover {
+                transform: translateY(-6px);
+            }
+        }
+    }
+}
+
+//PRODUCT GALLERY
+// Opened non-modally (dialog.show()), so there is no ::backdrop and the page
+// stays interactive — this is a second card stacked onto .shop, not an overlay.
+.product-modal {
+    position: absolute;
+    // Overrides the UA dialog centring so it anchors to .shop instead
+    top: -20px;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 50;
+
+    border: none;
+    background: none;
+    padding: 0;
+    overflow: visible;
+
+    &-card {
+        position: relative;
+        background-color: $white;
+        border: 3px solid $black;
+        padding: 22px;
+        box-sizing: border-box;
+        width: min(84vw, 346px);
+        // Leaves room for the tab sitting above the card
+        margin-top: 44px;
+        // Hard offset shadow: reads as a card lifted off the shop panel
+        box-shadow: 10px 10px 0 rgba(0, 3, 0, 0.35);
+
+        &-close {
+            position: absolute;
+            // top: -44px;
+            // right: -3px;
+            top: 0;
+            right: 0;
+            // width: 38px;
+            width: 44px;
+            // height: 38px;
+            height: 44px;
+            padding: 0;
+            background-color: $white;
+            // border: 3px solid $black;
+            border: none;
+            color: $black;
+            font-family: "Tiny5", sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+
+            &:focus {
+                outline: none;
+            }
+
+            &:hover {
+                background-color: #F80000;
+                color: $white;
+            }
+        }
+
+        &-tab {
+            position: absolute;
+            top: -44px;
+            left: -3px;
+            margin: 0;
+            padding: 4px 22px;
+            background-color: #F80000;
+            color: $white;
+            font-family: "Taviraj", serif;
+            font-size: 30px;
+            border-top-left-radius: 20px;
+            line-height: 1.2;
+            cursor: default;
+        }
+
+        &-images {
+            max-height: 58vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        // One group per product; only the selected one is shown
+        &-group {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+
+            &[hidden] {
+                display: none;
+            }
+
+            & img {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        &-caption {
+            font-family: "Taviraj", serif;
+            font-size: 20px;
+            text-align: center;
+            margin: 18px 0 0;
+        }
+    }
+}
+
+//CART PANEL
+// Slides in from the right, mirroring the radio queue on the left. Contents
+// come from the WooCommerce Store API, so this renders empty until JS runs.
+.cart {
+    position: fixed;
+    top: 0;
+    bottom: 26px;
+    // Centred: pushed to the middle, then pulled back by half its own width
+    left: 50%;
+    width: min(92vw, 420px);
+    z-index: 55;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 26px;
+    background-color: $white;
+    border: 3px solid $black;
+    border-top: none;
+    color: $black;
+    overflow-y: auto;
+    // Drops in from above. The -50% X stays put in both states, so only the
+    // vertical half of the transform animates.
+    transform: translate(-50%, -100%);
+    visibility: hidden;
+    transition: transform 0.28s ease, visibility 0s linear 0.28s;
+
+    &[data-open="true"] {
+        transform: translate(-50%, 0);
+        visibility: visible;
+        transition: transform 0.28s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+
+    &-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+
+        &-title {
+            margin: 0;
+            font-family: "Ojuju", sans-serif;
+            font-weight: 800;
+            font-size: 38px;
+            text-transform: lowercase;
+        }
+
+        &-close {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            background-color: $white;
+            color: $black;
+            border: 3px solid $black;
+            font-family: "Tiny5", sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #F80000;
+                color: $white;
+            }
+        }
+    }
+
+    &-items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        flex: 1 1 auto;
+
+        // Thumbnail on the left, everything about the item stacked beside it
+        &-row {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            gap: 12px;
+            padding: 12px 0;
+
+            &-thumb {
+                // Fills its grid cell: 88px wide, and as tall as the body
+                // column beside it turns out to be
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border: 2px dotted $black;
+                background-color: $inner;
+            }
+
+            &-body {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                // Lets long titles wrap instead of stretching the grid column
+                min-width: 0;
+            }
+
+            &-name {
+                margin: 0;
+                font-family: "Taviraj", serif;
+                font-size: 16px;
+                line-height: 1.2;
+            }
+
+            // Its own box, so the size reads as the option picked rather than
+            // part of the product name
+            &-size {
+                align-self: flex-start;
+                padding: 1px 6px;
+                border: 2px solid $black;
+                background-color: $inner;
+                font-family: "Tiny5", sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                text-transform: uppercase;
+            }
+
+            &-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                margin-top: 2px;
+            }
+
+            &-qty {
+                width: 54px;
+                padding: 4px;
+                border: 2px solid $black;
+                border-radius: 0px;
+                font-family: "Tiny5", sans-serif;
+                font-size: 16px;
+                text-align: center;
+            }
+
+            &-price {
+                font-family: "Tiny5", sans-serif;
+                font-size: 16px;
+                text-align: right;
+            }
+        }
+    }
+
+    &-empty[hidden] {
+        display: none;
+    }
+
+    &-empty {
+        font-family: "Taviraj", serif;
+        color: #6B6B6B;
+        padding: 20px 0;
+    }
+
+    &-foot {
+        flex: 0 0 auto;
+        padding-top: 16px;
+
+        &-total {
+            display: flex;
+            justify-content: space-between;
+            font-family: "Geostar Fill", sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            text-transform: lowercase;
+            margin-bottom: 14px;
+        }
+
+        &-checkout {
+            display: block;
+            padding: 12px;
+            background-color: $black;
+            color: $white;
+            font-family: "Tiny5", sans-serif;
+            font-size: 20px;
+            text-align: center;
+            text-decoration: none;
+
+            &:hover {
+                background-color: #F80000;
+            }
+        }
+    }
+}
+
+// Item count riding on the hero cart icon
+.dinero-hero-cart {
+    cursor: pointer;
+}
+
+//OFF-CANVAS RADIO QUEUE
+// Slides in from the left over everything; the burger in .dinero-hero stays
+// above it so the same control closes it again.
+.offcanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0px 26px 26px;
+    background-color: rgba(58, 58, 58, 0.96);
+    color: $white;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.28s ease, visibility 0s linear 0.28s;
+
+    &[data-open="true"] {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.28s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+
+    &-tab {
+        align-self: flex-start;
+        display: block;
+        width: clamp(200px, 48vw, 320px);
+        height: auto;
+        margin: 0;
+    }
+
+    &-title {
+        margin: 0 0 18px;
+        font-family: "Tiny5", sans-serif;
+        font-size: 44px;
+        font-weight: 400;
+        color: #B8B8B8;
+        text-transform: lowercase;
+        text-align: right;
+        // Sits above the tab, mirroring the layered look of the shop card
+        order: -1;
+    }
+
+    &-tree {
+        flex: 1 1 auto;
+        padding-top: 24px;
+
+        & h3 {
+            margin: 0;
+            font-weight: 400;
+        }
+
+        &-group {
+            margin-bottom: 18px;
+
+            // Collapsed groups hide their list. The state lives on the group
+            // because the toggle sits inside an <h3>, so it is not a sibling
+            // of the list it controls.
+            &[data-collapsed="true"] &-list {
+                display: none;
+            }
+
+            // "-" when open, "+" when collapsed
+            &-toggle {
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+                padding: 0;
+                border: none;
+                background: none;
+                color: $white;
+                font-family: "Tiny5", sans-serif;
+                font-size: 30px;
+                text-transform: lowercase;
+                cursor: pointer;
+            }
+
+            &-mark::before {
+                content: "+";
+            }
+
+            &-toggle[aria-expanded="true"] &-mark::before {
+                content: "-";
+            }
+
+            &-list {
+                list-style: none;
+                margin: 6px 0 0;
+                padding-left: 26px;
+            }
+        }
+    }
+
+    &-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 30px;
+        flex: 0 0 auto;
+
+        &-star {
+            width: 44px;
+            height: auto;
+        }
+
+        &-word {
+            width: clamp(160px, 52vw, 260px);
+            height: auto;
+        }
+    }
+}
+
+// One track in the queue; clicking it skips the radio straight there
+.offcanvas-tree-item {
+    & button {
+        display: block;
+        width: 100%;
+        padding: 4px 0;
+        border: none;
+        background: none;
+        color: #D2D2D2;
+        font-family: "Tiny5", serif;
+        // font-family: "Taviraj", serif;
+        font-size: 21px;
+        text-align: left;
+        // text-transform: lowercase;
+        cursor: pointer;
+
+        &::before {
+            content: "* ";
+            vertical-align: middle;
+        }
+
+        &:hover {
+            color: $white;
+            text-decoration: underline;
+        }
+    }
+
+    &.is-playing button {
+        color: #000000;
+
+        &::before {
+            color: red;
+        }
+
+        // &::before {
+        //     content: "";
+        //     background-image: url(/img/redshar.png);
+        //     margin-right: 2px;
+        //     background-size: contain;
+        //     background-repeat: no-repeat;
+        //     display: inline-block;
+        //     width: 12px;
+        //     height: 12px;
+        //     vertical-align: middle;
+        // }
+
+    }
+}
+
+//WORDMARK (asterisk + hollow lettering)
+.dinero-mark {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    padding-top: 60px;
+
+    // Stacked frames, cycled by animation-delay so only one shows at a time
+    &-star {
+        position: relative;
+        width: clamp(180px, 6vw, 180px);
+        aspect-ratio: 1;
+        flex: 0 0 auto;
+
+        & img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            animation: flackaCycle 1.5s steps(1, end) infinite;
+        }
+
+        & img:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        & img:nth-child(3) {
+            animation-delay: 1s;
+        }
+    }
+
+    @keyframes flackaCycle {
+
+        0%,
+        33.33% {
+            opacity: 1;
+        }
+
+        33.34%,
+        100% {
+            opacity: 0;
+        }
+    }
+
+    &-word {
+        display: block;
+        width: clamp(200px, 26vw, 466px);
+        height: auto;
+        flex: 0 1 auto;
+    }
+}
+
+//RADIO
+.moveradio {
+    position: absolute;
+    float: right;
+    bottom: calc(0px + 116px);
+    right: 0;
+    margin-right: 18px;
+    z-index: 3;
+}
+
+.radio {
+    background-color: $grey;
+    min-height: 224px;
+
+    & .BIGfuckofftext {
+        font-family: "Ojuju", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 800;
+        font-size: 128px;
+        text-indent: -42px;
+        position: absolute;
+        bottom: 15px;
+
+        &::before {
+            content: url(/img/media_player_stream_no.png);
+            position: absolute;
+            top: -68px;
+            left: 14px;
+            color: red;
+        }
+    }
+
+    & .progress {
+        &-container {
+            width: 95%;
+            height: 5px;
+            background: $green;
+            overflow: hidden;
+            position: absolute;
+            bottom: 31%;
+        }
+
+        &-bar {
+            height: 100%;
+            // background: #FF15A1;
+            // background: #0B5E0B;
+            background: #FAFF00;
+            width: 0%;
+            border-radius: 99px;
+            transition: width 0.1s;
+        }
+    }
+
+
+    &-wrapper {
+        padding: 0px 94px;
+        display: flex;
+        gap: 60px;
+
+        &::after {
+            content: '';
+            position: absolute;
+            z-index: 2;
+            bottom: 0;
+            color: red;
+            background-image: url(/img/su00kiradi0.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 422px;
+            height: 100%;
+            right: -15px;
+        }
+
+        &-card {
+            z-index: 2;
+            background-color: $blue;
+            color: $white;
+            position: relative;
+            // bottom: 20px;
+            bottom: calc(0px - 82px);
+            min-width: 230px;
+
+            & h2,
+            h3 {
+                font-family: "Taviraj", serif;
+                font-weight: 400;
+            }
+
+            & span {
+                font-family: "Tiny5", sans-serif;
+                font-size: 20px;
+            }
+
+            &-tophalf {
+                height: 146px;
+                padding: 16px 8px;
+
+                &-queue {
+                    color: $white;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    transform: translateY(30%);
+                    font-size: 20px;
+                    font-family: "Tiny5", sans-serif;
+                    animation: pulse 2s infinite;
+                    text-align: center;
+
+                }
+
+                &-status {
+                    font-family: "Ojuju", sans-serif;
+                    font-size: 32px;
+                    font-weight: 800;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    left: 0;
+                    bottom: 0;
+                    transform: translateY(-15%);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-transform: lowercase;
+                    width: 100%;
+
+                    &::after {
+                        content: '';
+                        background-image: url(/img/shortcut.png);
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        width: 40px;
+                        height: 40px;
+                        position: absolute;
+                        width: 80%;
+                        margin-top: 10px;
+                    }
+                }
+
+                &-volume {
+                    float: right;
+                    width: 40px;
+                    height: 40px;
+                    cursor: pointer;
+                }
+            }
+
+
+            &-bottomhalf {
+                border-top: 10px solid $green;
+
+                &-cd {
+                    position: absolute;
+                    width: 60px;
+                    height: 60px;
+                    left: -22px;
+                    bottom: 56px;
+                }
+
+                &-info {
+                    display: flex;
+                    padding: 0px 8px;
+                }
+
+                & .tempo {
+                    position: absolute;
+                    right: 0;
+                    margin-right: 32px;
+                    bottom: 50px;
+                }
+
+                & h3 {
+                    position: absolute;
+                    right: 0;
+                    margin-right: 32px;
+                    bottom: 0;
+                }
+
+                &-image {
+                    height: 0px;
+
+                    &::after {
+                        content: "  ";
+                        background-color: $green;
+                        position: relative;
+                        display: block;
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 999px;
+                        top: -35px;
+                        left: -28px;
+                    }
+                }
+            }
+        }
+    }
+
+
+}
+
+// MEDIA queries
+
+@media screen and (max-width: 576px) {
+
+    $shop-pad-mobile: 10px;
+
+    .moveradio {}
+
+    .radio {
+
+        & .BIGfuckofftext {
+            text-indent: -32px;
+            bottom: 32px;
+        }
+
+        &-wrapper {
+            padding: 0px 24px;
+
+            &::after {
+                display: none;
+                width: 250px;
+            }
+        }
+    }
+
+    .dinero {
+        padding: 20px 16px 40px;
+
+        // Cart + burger sit on their own row above the title
+        &-hero {
+            flex-direction: column-reverse;
+            align-items: stretch;
+            gap: 14px;
+
+            &-title {
+                width: 100%;
+
+                & img {
+                    width: 100%;
+                }
+            }
+
+            &-nav {
+                justify-content: space-between;
+            }
+
+            &-cart {
+                width: 54px;
+            }
+
+            &-burger {
+                display: flex;
+            }
+        }
+
+        // Radio rejoins the normal flow instead of being pinned bottom-right.
+        // Stays positioned so its absolutely-placed children still anchor to it.
+        & .moveradio {
+            right: -16px;
+            margin-right: 0;
+            position: relative;
+            width: 100%;
+            bottom: auto;
+            margin-top: -32px;
+        }
+    }
+
+    .shop {
+        width: 100%;
+        padding: 36px 36px 0;
+        // Clearance for the add-to-cart button lifted above the block
+        margin-top: 24px;
+
+        &-main {
+            flex-direction: column;
+
+            &-frame {
+                flex: 1 1 auto;
+                border-width: 5px;
+            }
+
+            &-frame-product {
+                width: 100%;
+            }
+
+            // // The mobile design shows the frame and add-to-cart only
+            // &-text-label,
+            // &-text-price,
+            // &-text-buy-sizer {
+            //     display: none;
+            // }
+
+            &-text {
+                &-price {
+                    font-size: 20px;
+                }
+
+                &-label{
+                    &.size{
+                        margin: 10px 0px;
+                        font-size: 14px;
+                    }
+                }
+
+                &-buy {
+                    margin-top: 0;
+
+                    &-buttons {
+                        // flex-wrap: unset;
+                    }
+
+                    &-sizer {
+                        width: calc((100% - 24px)/4);
+                    }
+
+                    &-addtocart {
+                        // position: absolute;
+                        // bottom: 95%;
+                        // left: 0;
+                        // margin: 0 0 6px;
+                    }
+                }
+            }
+        }
+
+        &-thumbs {
+            left: $shop-pad-mobile;
+            right: $shop-pad-mobile;
+        }
+    }
+
+    // Star is dropped on mobile; the wordmark runs full width
+    .dinero-mark {
+        padding-top: 24px;
+
+        &-star {
+            display: none;
+        }
+
+        &-word {
+            z-index: 25;
+            width: 100%;
+        }
+    }
+}

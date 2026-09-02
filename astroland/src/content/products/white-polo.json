@@ -1,0 +1,36 @@
+{
+    "sku": "SSD-POLO-WHT",
+    "title": "southside/dinero",
+    "brand": "nulnanul.nl",
+    "price": 3200,
+    "currency": "EUR",
+    "order": 1,
+    "variants": [
+        {
+            "size": "s",
+            "sku": "SSD-POLO-WHT-S",
+            "stock": null
+        },
+        {
+            "size": "m",
+            "sku": "SSD-POLO-WHT-M",
+            "stock": null
+        },
+        {
+            "size": "L",
+            "sku": "SSD-POLO-WHT-L",
+            "stock": null
+        },
+        {
+            "size": "xl",
+            "sku": "SSD-POLO-WHT-XL",
+            "stock": null
+        }
+    ],
+    "images": {
+        "front": "/img/whitepolo.png",
+        "additional": [
+            "/img/whitepolo-back.png"
+        ]
+    }
+}

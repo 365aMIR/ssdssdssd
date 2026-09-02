@@ -1,0 +1,329 @@
+---
+import Image from "astro/components/Image.astro";
+
+interface RadioCardProps {
+  title: string;
+  tempo: number;
+  mp3Url: string;
+  isFirst: boolean;
+  index: number;
+  totalCards: number;
+}
+
+const { title, tempo, mp3Url, isFirst, index } = Astro.props as RadioCardProps;
+---
+
+<div class="radio-wrapper-card" data-index={index}>
+  <div class="radio-wrapper-card-tophalf">
+    <div class="radio-wrapper-card-tophalf-player">
+      {isFirst && <Image src="/img/loudspeaker_rays-1.png" width={100} height={100} alt="volume" class="radio-wrapper-card-tophalf-volume" />}
+      
+      <!-- Audio element without controls -->
+      <div class="custom-player">
+        <audio class="audio-element" src={mp3Url} data-index={index}></audio>
+        <div class="progress-container">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="radio-wrapper-card-tophalf-status" style={isFirst ? "" : "visibility: hidden"}>Playing Now</div>
+    {!isFirst && <div class="radio-wrapper-card-tophalf-queue">looking for file...</div>}
+  </div>
+  
+  <div class="radio-wrapper-card-bottomhalf">
+    <div class="radio-wrapper-card-bottomhalf-image"></div>
+    <Image src="/img/cd_audio_cd-0.png" width={100} height={100} alt="cd" class="radio-wrapper-card-bottomhalf-cd" />
+    <div class="radio-wrapper-card-bottomhalf-info">
+      <h2>title</h2>
+      <span>{title}</span>
+      <span class="tempo">{tempo}</span>
+      <h3>tempo</h3>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Global variables to track the currently playing card
+  let currentlyPlayingIndex = 0;
+  let queueStatusInterval: ReturnType<typeof setInterval>;
+  let countdownInterval: ReturnType<typeof setInterval>;
+  
+  // Queue status messages for non-playing cards
+  const queueMessages = [
+    'looking for file...',
+    'cant locate sample!',
+    'found sample',
+    'waiting for song to end...'
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const allCards =
+      document.querySelectorAll<HTMLElement>('.radio-wrapper-card');
+    const allAudios =
+      document.querySelectorAll<HTMLAudioElement>('.audio-element');
+    
+    if (allCards.length === 0) return;
+    
+    // Make sure queue messages are initially visible for non-first cards
+    initQueueMessages();
+    
+    // Start cycling through queue status messages
+    startQueueStatusCycle();
+    
+    // Setup progress bars for all tracks
+    allAudios.forEach((audio, idx) => {
+      const player = audio.closest('.custom-player');
+      const progressBar =
+        player?.querySelector<HTMLElement>('.progress-bar');
+      if (!progressBar) return;
+      
+      // Update progress bar as audio plays
+      audio.addEventListener('timeupdate', () => {
+        const progress = (audio.currentTime / audio.duration) * 100 || 0;
+        progressBar.style.width = `${progress}%`;
+        
+        // Check if we're near the end of the track to start countdown
+        if (idx === currentlyPlayingIndex && audio.duration && (audio.duration - audio.currentTime <= 3)) {
+          startCountdown(audio.duration - audio.currentTime);
+        }
+      });
+      
+      // When audio ends, play the next one in the queue and rotate cards
+      audio.addEventListener('ended', () => {
+        playNextTrack();
+      });
+    });
+    
+    // Initialize queue messages for non-first cards
+    function initQueueMessages() {
+      allCards.forEach((card, i) => {
+        if (i !== 0) { // Not the first card
+          const queueElement = card.querySelector<HTMLElement>('.radio-wrapper-card-tophalf-queue');
+          if (queueElement) {
+            queueElement.style.display = 'block';
+            queueElement.textContent = queueMessages[0]; // Start with first message
+          }
+        }
+      });
+    }
+    
+    // Function to cycle through queue status messages
+    function startQueueStatusCycle() {
+      clearInterval(queueStatusInterval);
+      
+      queueStatusInterval = setInterval(() => {
+        const cardsNodeList =
+          document.querySelectorAll<HTMLElement>('.radio-wrapper-card'); // Get fresh reference
+        const cards = Array.from(cardsNodeList);
+        
+        cards.forEach((card, i) => {
+          // Skip the currently playing card
+          if (i !== 0) { // Not the first card after reordering
+            const queueElement = card.querySelector<HTMLElement>('.radio-wrapper-card-tophalf-queue');
+            if (queueElement && queueElement.style.display !== 'none') {
+              // Get random message
+              const randomIndex = Math.floor(Math.random() * queueMessages.length);
+              queueElement.textContent = queueMessages[randomIndex];
+            }
+          }
+        });
+      }, 4000); // Change messages every 4 seconds
+    }
+    
+    // Function to start countdown on next card
+    function startCountdown(secondsRemaining: number) {
+      clearInterval(countdownInterval);
+      
+      // Get the next card
+      const cardsNodeList = document.querySelectorAll<HTMLElement>('.radio-wrapper-card'); // Get fresh reference
+      const cards = Array.from(cardsNodeList);
+      const nextCard = cards[1]; // The second card is next in line
+      
+      if (!nextCard) return;
+      
+      const queueElement = nextCard.querySelector<HTMLElement>('.radio-wrapper-card-tophalf-queue');
+      
+      if (!queueElement) return;
+      
+      // Make sure queue element is visible during countdown
+      queueElement.style.display = 'block';
+      
+      // Update every 1 second
+      countdownInterval = setInterval(() => {
+        const countdown = Math.ceil(secondsRemaining);
+        if (countdown <= 3 && countdown > 0) {
+          queueElement.textContent = `${countdown}...`;
+        }
+        secondsRemaining -= 1;
+        
+        if (secondsRemaining <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }
+    
+    // Function to play the next track and rotate cards
+    function playNextTrack() {
+      // Stop the current track
+      const allAudioElements = document.querySelectorAll<HTMLAudioElement>('.audio-element');
+      allAudioElements[0].pause(); // First audio is the one currently playing
+      allAudioElements[0].currentTime = 0;
+      
+      // Get fresh references to cards and container
+      const cardsNodeList = document.querySelectorAll<HTMLElement>('.radio-wrapper-card');
+      const cards = Array.from(cardsNodeList);
+      const parentContainer = cards[0].parentElement;
+      if (!parentContainer) return;
+      
+      // Move the first card to the end
+      const firstCard = cards[0];
+      parentContainer.appendChild(firstCard);
+      
+      // Now update the UI for the new first card
+      updatePlayerStatus();
+      
+      // Play the new first audio
+      const newFirstAudio = document.querySelectorAll<HTMLAudioElement>('.audio-element')[0];
+      newFirstAudio.play()
+        .catch((error: unknown) => {
+          console.error("Error playing next track:", error);
+          addClickListenerToEnableAudio();
+        });
+    }
+    
+    // Update the UI to reflect the new card order
+    function updatePlayerStatus() {
+      // Get fresh references after DOM changes
+      const cardsNodeList = document.querySelectorAll<HTMLElement>('.radio-wrapper-card');
+      const cards = Array.from(cardsNodeList);
+      
+      cards.forEach((card, i) => {
+        const statusElement = card.querySelector<HTMLElement>(
+          '.radio-wrapper-card-tophalf-status',
+        );
+        const queueElement = card.querySelector<HTMLElement>('.radio-wrapper-card-tophalf-queue');
+        const volumeIcon = card.querySelector<HTMLElement>(
+          '.radio-wrapper-card-tophalf-volume',
+        );
+        const bottomImage = card.querySelector<HTMLElement>(
+          '.radio-wrapper-card-bottomhalf-image',
+        );
+        
+        if (i === 0) {
+          // This is now the first/playing card
+          if (statusElement) statusElement.style.visibility = 'visible';
+          if (queueElement) queueElement.style.display = 'none';
+          if (volumeIcon) volumeIcon.style.display = 'block';
+          if (bottomImage) bottomImage.style.display = 'block';
+        } else {
+          // Other cards
+          if (statusElement) statusElement.style.visibility = 'hidden';
+          if (queueElement) queueElement.style.display = 'block';
+          if (volumeIcon) volumeIcon.style.display = 'none';
+          if (bottomImage) bottomImage.style.display = 'none';
+        }
+      });
+
+      // Queue.astro mirrors the card order into the off-canvas menu
+      document.dispatchEvent(new CustomEvent('radio:change'));
+    }
+
+    // Jump straight to a track. The running order lives in the DOM, so this
+    // rotates cards to the back until the requested one is in front — the same
+    // move playNextTrack() makes, just repeated.
+    function skipTo(targetIndex: number) {
+      const target = String(targetIndex);
+      const readCards = () =>
+        Array.from(
+          document.querySelectorAll<HTMLElement>('.radio-wrapper-card')
+        );
+
+      let cards = readCards();
+      if (cards.length === 0) return;
+
+      const parentContainer = cards[0].parentElement;
+      if (!parentContainer) return;
+
+      // Bounded by the card count so an unknown index can't spin forever. A
+      // full cycle of n rotations leaves the deck exactly as it was, so a miss
+      // is a no-op rather than a scrambled queue.
+      for (let i = 0; i < cards.length && cards[0].dataset.index !== target; i++) {
+        parentContainer.appendChild(cards[0]);
+        cards = readCards();
+      }
+
+      if (cards[0].dataset.index !== target) return;
+
+      const audios =
+        document.querySelectorAll<HTMLAudioElement>('.audio-element');
+      audios.forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+
+      clearInterval(countdownInterval);
+      updatePlayerStatus();
+
+      audios[0].play().catch((error: unknown) => {
+        console.error("Error skipping to track:", error);
+      });
+    }
+
+    document.addEventListener('radio:skip', (event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail && typeof detail.index === 'number') skipTo(detail.index);
+    });
+    
+    // Add click listener to body to enable audio (to bypass browser autoplay restrictions)
+    function addClickListenerToEnableAudio() {
+      document.body.addEventListener('click', function bodyClickHandler() {
+        const firstAudio = document.querySelector<HTMLAudioElement>('.audio-element');
+        if (firstAudio && firstAudio.paused) {
+          firstAudio.play()
+            .then(() => {
+              updatePlayerStatus();
+            })
+            .catch((error: unknown) => {
+              console.error("Error starting playback:", error);
+            });
+        }
+        // Remove the listener after first click
+        document.body.removeEventListener('click', bodyClickHandler);
+      }, { once: true });
+    }
+    
+    // Start playing the first track automatically
+    const firstAudio = allAudios[0];
+    firstAudio.play()
+      .then(() => {
+        // Success! Update UI
+        updatePlayerStatus();
+      })
+      .catch((error: unknown) => {
+        console.error("Autoplay prevented:", error);
+        // Add click listener to start audio on user interaction
+        addClickListenerToEnableAudio();
+      });
+  });
+</script>
+
+<style>
+  .custom-player {
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  .audio-element {
+    display: none;
+  }
+  
+  .radio-wrapper-card-tophalf-queue {
+
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+</style>

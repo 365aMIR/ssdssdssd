@@ -1,0 +1,36 @@
+{
+    "sku": "SSD-POLO-CORT",
+    "title": "southside/dinero",
+    "brand": "nulnanul.nl",
+    "price": 2800,
+    "currency": "EUR",
+    "order": 4,
+    "variants": [
+        {
+            "size": "s",
+            "sku": "SSD-POLO-CORT-S",
+            "stock": null
+        },
+        {
+            "size": "m",
+            "sku": "SSD-POLO-CORT-M",
+            "stock": null
+        },
+        {
+            "size": "L",
+            "sku": "SSD-POLO-CORT-L",
+            "stock": null
+        },
+        {
+            "size": "xl",
+            "sku": "SSD-POLO-CORT-XL",
+            "stock": null
+        }
+    ],
+    "images": {
+        "front": "/img/cortfront.webp",
+        "additional": [
+            "/img/cortback.webp"
+        ]
+    }
+}

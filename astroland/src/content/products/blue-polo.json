@@ -1,0 +1,34 @@
+{
+    "sku": "SSD-POLO-BLU",
+    "title": "southside/dinero",
+    "brand": "nulnanul.nl",
+    "price": 3200,
+    "currency": "EUR",
+    "order": 2,
+    "variants": [
+        {
+            "size": "s",
+            "sku": "SSD-POLO-BLU-S",
+            "stock": null
+        },
+        {
+            "size": "m",
+            "sku": "SSD-POLO-BLU-M",
+            "stock": null
+        },
+        {
+            "size": "L",
+            "sku": "SSD-POLO-BLU-L",
+            "stock": null
+        },
+        {
+            "size": "xl",
+            "sku": "SSD-POLO-BLU-XL",
+            "stock": null
+        }
+    ],
+    "images": {
+        "front": "/img/bluepolo.png",
+        "additional": []
+    }
+}

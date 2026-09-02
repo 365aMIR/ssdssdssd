@@ -1,0 +1,27 @@
+---
+import RadioCard from "@components/RadioCard.astro";
+
+interface RadioProps {
+  radioCards: Array<{ title: string; tempo: number; mp3Url: string }>;
+}
+
+const { radioCards } = Astro.props as RadioProps;
+---
+
+<div class="col-sm-10 col-5 moveradio">
+  <div class="radio">
+    <h1 class="BIGfuckofftext">RADIO</h1>
+    <div class="radio-wrapper">
+      {radioCards.map((card, index) => (
+        <RadioCard 
+          title={card.title} 
+          tempo={card.tempo} 
+          mp3Url={card.mp3Url} 
+          isFirst={index === 0}
+          index={index}
+          totalCards={radioCards.length}
+        />
+      ))}
+    </div>
+  </div>
+</div>

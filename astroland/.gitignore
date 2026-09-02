@@ -1,0 +1,15 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# secrets — the Woo API credentials live here
+.env
+.env.production
+.env.local
+
+# os
+.DS_Store
+Thumbs.db

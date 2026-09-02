@@ -1,0 +1,34 @@
+{
+    "sku": "SSD-TANK-LION",
+    "title": "southside/dinero",
+    "brand": "nulnanul.nl",
+    "price": 2800,
+    "currency": "EUR",
+    "order": 3,
+    "variants": [
+        {
+            "size": "s",
+            "sku": "SSD-TANK-LION-S",
+            "stock": null
+        },
+        {
+            "size": "m",
+            "sku": "SSD-TANK-LION-M",
+            "stock": null
+        },
+        {
+            "size": "L",
+            "sku": "SSD-TANK-LION-L",
+            "stock": null
+        },
+        {
+            "size": "xl",
+            "sku": "SSD-TANK-LION-XL",
+            "stock": null
+        }
+    ],
+    "images": {
+        "front": "/img/tanktop.png",
+        "additional": []
+    }
+}

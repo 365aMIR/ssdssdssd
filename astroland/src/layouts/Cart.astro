@@ -1,0 +1,164 @@
+---
+// Cart panel. Contents are rendered client-side because the cart lives on the
+// WooCommerce server — there is nothing to render at build time.
+---
+
+<aside class="cart" id="cart-panel" data-open="false" inert>
+    <div class="cart-head">
+        <h2 class="cart-head-title">cart</h2>
+        <button class="cart-head-close" type="button" id="cart-close" aria-label="close cart">x</button>
+    </div>
+
+    <ul class="cart-items" id="cart-items"></ul>
+
+    <p class="cart-empty" id="cart-empty">your cart is empty</p>
+
+    <div class="cart-foot">
+        <div class="cart-foot-total">
+            <span>total</span>
+            <span id="cart-total">—</span>
+        </div>
+        <a class="cart-foot-checkout" id="cart-checkout" href="#">checkout</a>
+    </div>
+</aside>
+
+<script>
+    import {
+        getCart,
+        updateItem,
+        removeItem,
+        checkoutUrl,
+        formatCartPrice,
+        type Cart,
+    } from "../lib/cart";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const panel = document.getElementById("cart-panel");
+        const trigger = document.querySelector<HTMLElement>(".dinero-hero-cart");
+        const list = document.getElementById("cart-items");
+        const empty = document.getElementById("cart-empty");
+        const totalEl = document.getElementById("cart-total");
+        const checkout = document.getElementById("cart-checkout");
+        const closeBtn = document.getElementById("cart-close");
+        if (!panel || !list || !empty || !totalEl || !checkout) return;
+
+        function setOpen(open: boolean) {
+            if (!panel) return;
+            panel.dataset.open = String(open);
+            if (open) panel.removeAttribute("inert");
+            else panel.setAttribute("inert", "");
+        }
+
+        function render(cart: Cart) {
+            if (!list || !empty || !totalEl || !checkout) return;
+            list.replaceChildren();
+            empty.hidden = cart.items.length > 0;
+
+            for (const item of cart.items) {
+                const li = document.createElement("li");
+                li.className = "cart-items-row";
+
+                const thumb = document.createElement("img");
+                thumb.className = "cart-items-row-thumb";
+                thumb.src = item.images[0]?.thumbnail ?? "";
+                thumb.alt = item.images[0]?.alt ?? "";
+                thumb.loading = "lazy";
+
+                const body = document.createElement("div");
+                body.className = "cart-items-row-body";
+
+                const name = document.createElement("p");
+                name.className = "cart-items-row-name";
+                name.textContent = item.name;
+                body.appendChild(name);
+
+                // Size sits on its own line so it reads as the option chosen,
+                // rather than disappearing into the product title
+                const size = item.variation.map((v) => v.value).join(", ");
+                if (size) {
+                    const sizeEl = document.createElement("span");
+                    sizeEl.className = "cart-items-row-size";
+                    sizeEl.textContent = size;
+                    body.appendChild(sizeEl);
+                }
+
+                const controls = document.createElement("div");
+                controls.className = "cart-items-row-controls";
+
+                const qty = document.createElement("input");
+                qty.className = "cart-items-row-qty";
+                qty.type = "number";
+                // 0 is allowed as a remove shortcut, below Woo's own minimum
+                qty.min = "0";
+                qty.max = String(item.quantity_limits?.maximum ?? 9999);
+                qty.value = String(item.quantity);
+                qty.setAttribute("aria-label", `quantity for ${item.name}`);
+                qty.addEventListener("change", async () => {
+                    const next = Number(qty.value);
+                    render(
+                        next > 0
+                            ? await updateItem(item.key, next)
+                            : await removeItem(item.key),
+                    );
+                });
+
+                const price = document.createElement("span");
+                price.className = "cart-items-row-price";
+                price.textContent = formatCartPrice(
+                    item.totals.line_total,
+                    item.totals.currency_code,
+                );
+
+                controls.append(qty, price);
+                body.appendChild(controls);
+
+                li.append(thumb, body);
+                list.appendChild(li);
+            }
+
+            totalEl.textContent = formatCartPrice(
+                cart.totals.total_price,
+                cart.totals.currency_code,
+            );
+            checkout.setAttribute("href", checkoutUrl());
+            updateBadge(cart.items_count);
+        }
+
+        // The hero cart icon doubles as the item counter
+        function updateBadge(count: number) {
+            trigger?.setAttribute("data-count", count > 0 ? String(count) : "");
+        }
+
+        trigger?.addEventListener("click", async () => {
+            setOpen(panel.dataset.open !== "true");
+            if (panel.dataset.open === "true") {
+                try {
+                    render(await getCart());
+                } catch (error) {
+                    console.error("Could not load cart:", error);
+                }
+            }
+        });
+
+        closeBtn?.addEventListener("click", () => setOpen(false));
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && panel.dataset.open === "true") setOpen(false);
+        });
+
+        // Shopper.astro fires this after a successful add-to-cart
+        document.addEventListener("cart:changed", (event) => {
+            const cart = (event as CustomEvent).detail?.cart as Cart | undefined;
+            if (cart) {
+                render(cart);
+                setOpen(true);
+            }
+        });
+
+        // Reflect any cart carried over from a previous visit
+        getCart()
+            .then((cart) => updateBadge(cart.items_count))
+            .catch(() => {
+                /* store unreachable — badge just stays empty */
+            });
+    });
+</script>

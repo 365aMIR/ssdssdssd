@@ -1,0 +1,34 @@
+{
+    "sku": "SSD-TEE-ROER",
+    "title": "southside/dinero",
+    "brand": "nulnanul.nl",
+    "price": 2400,
+    "currency": "EUR",
+    "order": 5,
+    "variants": [
+        {
+            "size": "s",
+            "sku": "SSD-TEE-ROER-S",
+            "stock": null
+        },
+        {
+            "size": "m",
+            "sku": "SSD-TEE-ROER-M",
+            "stock": null
+        },
+        {
+            "size": "L",
+            "sku": "SSD-TEE-ROER-L",
+            "stock": null
+        },
+        {
+            "size": "xl",
+            "sku": "SSD-TEE-ROER-XL",
+            "stock": null
+        }
+    ],
+    "images": {
+        "front": "/img/roermoney.png",
+        "additional": []
+    }
+}

@@ -1,0 +1,50 @@
+---
+import "../css/style.css";
+import Image from "astro/components/Image.astro";
+
+const flackaImages = [
+  "/img/msagent_file-1.png",
+  "/img/flakka2.png",
+  "/img/flakka3.png",
+  "/img/flakka4.png",
+];
+---
+
+<div class="col-sm-12 col-md-12 col-2">
+  <header class="header">
+    <h1>su00ki</h1>
+    <div class="flacka">
+      {
+        flackaImages.map((img, index) => (
+          <Image
+            class={`flacka-img flacka-img-${index}`}
+            src={img}
+            width={382}
+            height={382}
+            alt={`flacka icon ${index + 1}`}
+            style={index !== 0 ? "display: none;" : ""}
+          />
+        ))
+      }
+      <div class="flacka-speech">
+        <h2 class="flacka-speech-txt">flacka</h2>
+        <h2 class="flacka-speech-dots">...</h2>
+      </div>
+    </div>
+  </header>
+</div>
+
+<script>
+  // Function to rotate images
+  const flackaImages = document.querySelectorAll<HTMLElement>(".flacka-img");
+  let currentIndex = 0;
+
+  function rotateFlacka() {
+    flackaImages[currentIndex].style.display = "none";
+    currentIndex = (currentIndex + 1) % flackaImages.length;
+    flackaImages[currentIndex].style.display = "block";
+  }
+
+  // Rotate every 3 seconds
+  setInterval(rotateFlacka, 3000);
+</script>

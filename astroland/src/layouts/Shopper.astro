@@ -1,0 +1,445 @@
+---
+import { getCollection } from "astro:content";
+import { formatPrice } from "../lib/price";
+
+// Products come from src/content/products/*.json — see src/content.config.ts
+const entries = await getCollection("products");
+
+const products = entries
+    .sort((a, b) => a.data.order - b.data.order)
+    .map((entry) => {
+        const { front, back, additional } = entry.data.images;
+
+        // front / back / additional, flattened into the gallery order
+        const gallery = [
+            { src: front, alt: `${entry.data.title}, front` },
+            ...(back ? [{ src: back, alt: `${entry.data.title}, back` }] : []),
+            ...additional.map((src, i) => ({
+                src,
+                alt: `${entry.data.title}, view ${i + 1}`,
+            })),
+        ];
+
+        return {
+            id: entry.id,
+            ...entry.data,
+            gallery,
+            displayPrice: formatPrice(entry.data.price, entry.data.currency),
+        };
+    });
+
+const active = products[0];
+
+// Fail loudly rather than rendering a silently empty shop
+if (!active) {
+    throw new Error(
+        "No products found. Add a JSON file to src/content/products — see src/content.config.ts for the schema.",
+    );
+}
+---
+
+<section class="shop">
+    <div class="shop-main">
+        <button
+            class="shop-main-frame"
+            type="button"
+            id="product-open"
+            aria-label="View all images of this product"
+        >
+            <img
+                class="shop-main-frame-product"
+                id="product-frame"
+                src={active.gallery[0].src}
+                alt={active.gallery[0].alt}
+            />
+            <img class="shop-main-frame-swap" src="/img/switch.svg" alt="" />
+        </button>
+
+        <div class="shop-main-text">
+            <p class="shop-main-text-label head">{active.title}</p>
+            <h1 class="shop-main-text-price" id="product-price">
+                {active.displayPrice}
+            </h1>
+
+            <div class="shop-main-text-buy">
+                <p class="shop-main-text-label size">size</p>
+                <div class="shop-main-text-buy-buttons" id="product-sizes">
+                    {
+                        active.variants.map((variant) => (
+                            <button
+                                class="shop-main-text-buy-sizer"
+                                data-sku={variant.sku}
+                                data-woo-id={variant.wooId}
+                                aria-pressed="false"
+                                disabled={variant.stock === 0}
+                            >
+                                {variant.size}
+                            </button>
+                        ))
+                    }
+                    <button
+                        class="shop-main-text-buy-addtocart"
+                        id="add-to-cart">add to cart</button
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shop-rail">
+        <button id="slider-prev" class="slider-control" aria-label="previous"
+            >&lt;</button
+        >
+        <button
+            id="slider-next"
+            class="slider-control slider-control-next"
+            aria-label="next">&gt;</button
+        >
+    </div>
+
+    <div class="shop-thumbs" id="waslijn-slider">
+        {
+            products.map((product) => (
+                <button
+                    class="shop-thumbs-item"
+                    type="button"
+                    data-product-id={product.id}
+                    data-front={product.gallery[0].src}
+                    data-front-alt={product.gallery[0].alt}
+                    data-price={product.displayPrice}
+                    data-brand={product.brand}
+                    data-title={product.title}
+                    data-sku={product.sku}
+                    data-variants={JSON.stringify(product.variants)}
+                    aria-pressed={product.id === active.id ? "true" : "false"}
+                >
+                    <img src={product.gallery[0].src} alt={product.title} />
+                </button>
+            ))
+        }
+    </div>
+
+    <dialog class="product-modal" id="product-modal">
+        <div class="product-modal-card">
+            <p class="product-modal-card-tab" id="product-brand">
+                {active.brand}
+            </p>
+            <button
+                class="product-modal-card-close"
+                type="button"
+                id="product-close"
+                aria-label="Close gallery">x</button
+            >
+            <div class="product-modal-card-images">
+                {
+                    products.map((product) => (
+                        <div
+                            class="product-modal-card-group"
+                            data-product-id={product.id}
+                            hidden={product.id !== active.id}
+                        >
+                            {product.gallery.map((image) => (
+                                <img src={image.src} alt={image.alt} />
+                            ))}
+                        </div>
+                    ))
+                }
+            </div>
+            <p class="product-modal-card-caption" id="product-caption">
+                {active.title}
+            </p>
+        </div>
+    </dialog>
+</section>
+
+<style>
+    .slider-control {
+        position: absolute;
+        /* Centres the 30px box on the 4px rail */
+        top: -13px;
+        width: 30px;
+        height: 30px;
+        background-color: var(--white, #fffeff);
+        border: 2px solid var(--black, #000300);
+        cursor: pointer;
+        z-index: 2;
+        font-family: "Tiny5", sans-serif;
+        line-height: 1;
+        transition: transform 0.2s ease;
+    }
+
+    .slider-control:hover {
+        transform: scale(1.1);
+    }
+
+    #slider-prev {
+        left: 0;
+    }
+
+    /* Next sits at the far end of the rail as a red stop-block */
+    #slider-next {
+        right: 0;
+        background-color: #e01b1b;
+        color: var(--white, #fffeff);
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        /* ---------- Product selection ---------- */
+        const frame = document.getElementById(
+            "product-frame",
+        ) as HTMLImageElement | null;
+        const price = document.getElementById("product-price");
+        const brand = document.getElementById("product-brand");
+        const caption = document.getElementById("product-caption");
+        const sizeWrap = document.getElementById("product-sizes");
+        const thumbs = document.querySelectorAll<HTMLElement>(
+            ".shop-thumbs-item[data-product-id]",
+        );
+        const groups = document.querySelectorAll<HTMLElement>(
+            ".product-modal-card-group",
+        );
+
+        thumbs.forEach((thumb) => {
+            thumb.addEventListener("click", () => {
+                const id = thumb.dataset.productId;
+                if (!id) return;
+
+                if (frame) {
+                    frame.src = thumb.dataset.front ?? frame.src;
+                    frame.alt = thumb.dataset.frontAlt ?? "";
+                }
+                if (price) price.textContent = thumb.dataset.price ?? "";
+                if (brand) brand.textContent = thumb.dataset.brand ?? "";
+                if (caption) caption.textContent = thumb.dataset.title ?? "";
+
+                // Rebuild the size buttons, keeping add-to-cart in place
+                if (sizeWrap && thumb.dataset.variants) {
+                    const cart = sizeWrap.querySelector(
+                        ".shop-main-text-buy-addtocart",
+                    );
+                    sizeWrap
+                        .querySelectorAll(".shop-main-text-buy-sizer")
+                        .forEach((el) => el.remove());
+
+                    const variants: Array<{
+                        size: string;
+                        sku: string;
+                        stock: number | null;
+                        wooId: number | null;
+                    }> = JSON.parse(thumb.dataset.variants);
+
+                    variants.forEach((variant) => {
+                        const btn = document.createElement("button");
+                        btn.className = "shop-main-text-buy-sizer";
+                        btn.textContent = variant.size;
+                        btn.dataset.sku = variant.sku;
+                        // The variation id is what the Store API adds to the cart
+                        if (variant.wooId !== null) {
+                            btn.dataset.wooId = String(variant.wooId);
+                        }
+                        btn.setAttribute("aria-pressed", "false");
+                        // Sold-out sizes stay visible but unpickable
+                        btn.disabled = variant.stock === 0;
+                        sizeWrap.insertBefore(btn, cart);
+                    });
+                }
+
+                // Swap which gallery the modal shows
+                groups.forEach((group) => {
+                    group.hidden = group.dataset.productId !== id;
+                });
+
+                thumbs.forEach((other) => {
+                    other.setAttribute(
+                        "aria-pressed",
+                        other === thumb ? "true" : "false",
+                    );
+                });
+            });
+        });
+
+        /* ---------- Product gallery ---------- */
+        const productOpen = document.getElementById("product-open");
+        const productModal = document.getElementById(
+            "product-modal",
+        ) as HTMLDialogElement | null;
+
+        const productClose = document.getElementById("product-close");
+
+        if (productOpen && productModal) {
+            // show() rather than showModal(): no backdrop, no top layer, and the
+            // rest of the page stays live — the gallery reads as a second card
+            // stacked on the shop instead of an overlay.
+            productOpen.addEventListener("click", () => {
+                if (productModal.open) productModal.close();
+                else productModal.show();
+            });
+
+            productClose?.addEventListener("click", () => productModal.close());
+
+            // A non-modal dialog gets neither the light-dismiss nor the Escape
+            // handling showModal() provides, so both are wired up by hand.
+            const thumbRail = document.getElementById("waslijn-slider");
+
+            document.addEventListener("click", (e) => {
+                if (!productModal.open) return;
+                const target = e.target as Node;
+                // The thumbnails are exempt: with the page still live, picking
+                // another product should swap the card, not dismiss it.
+                if (
+                    !productModal.contains(target) &&
+                    !productOpen.contains(target) &&
+                    !thumbRail?.contains(target)
+                ) {
+                    productModal.close();
+                }
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && productModal.open)
+                    productModal.close();
+            });
+        }
+
+        /* ---------- Size selection and add to cart ---------- */
+        const addButton = document.getElementById("add-to-cart");
+
+        // Delegated: the size buttons are rebuilt whenever the product changes
+        sizeWrap?.addEventListener("click", (e) => {
+            const target = (e.target as HTMLElement).closest(
+                ".shop-main-text-buy-sizer",
+            );
+            if (!target) return;
+            sizeWrap
+                .querySelectorAll(".shop-main-text-buy-sizer")
+                .forEach((btn) =>
+                    btn.setAttribute(
+                        "aria-pressed",
+                        btn === target ? "true" : "false",
+                    ),
+                );
+        });
+
+        addButton?.addEventListener("click", async () => {
+            const selected = sizeWrap?.querySelector<HTMLElement>(
+                '.shop-main-text-buy-sizer[aria-pressed="true"]',
+            );
+            if (!selected) {
+                addButton.textContent = "pick a size";
+                setTimeout(() => (addButton.textContent = "add to cart"), 1600);
+                return;
+            }
+
+            const wooId = Number(selected.dataset.wooId);
+            if (!wooId) {
+                // Local JSON products have no variation id, so cannot be bought
+                console.warn("No WooCommerce variation id on this size");
+                return;
+            }
+
+            addButton.setAttribute("disabled", "");
+            addButton.textContent = "adding...";
+            try {
+                const { addItem } = await import("../lib/cart");
+                const cart = await addItem(wooId, 1);
+                // Cart.astro listens for this and opens itself
+                document.dispatchEvent(
+                    new CustomEvent("cart:changed", { detail: { cart } }),
+                );
+                addButton.textContent = "added";
+            } catch (error) {
+                console.error("Add to cart failed:", error);
+                addButton.textContent = "failed";
+            } finally {
+                setTimeout(() => {
+                    addButton.removeAttribute("disabled");
+                    addButton.textContent = "add to cart";
+                }, 1600);
+            }
+        });
+
+        /* ---------- Washing-line slider ---------- */
+        const slider = document.getElementById("waslijn-slider");
+        const prevBtn = document.getElementById("slider-prev");
+        const nextBtn = document.getElementById("slider-next");
+
+        if (!slider || !prevBtn || !nextBtn) return;
+
+        const scrollAmount = 200; // Amount to scroll with each button click
+
+        // Add initial grab cursor
+        slider.style.cursor = "grab";
+
+        prevBtn.addEventListener("click", () => {
+            slider.scrollBy({
+                left: -scrollAmount,
+                behavior: "smooth",
+            });
+        });
+
+        nextBtn.addEventListener("click", () => {
+            slider.scrollBy({
+                left: scrollAmount,
+                behavior: "smooth",
+            });
+        });
+
+        // Add dragging functionality
+        let isDragging = false;
+        let startX = 0;
+        let scrollLeft = 0;
+
+        slider.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+            slider.style.cursor = "grabbing";
+        });
+
+        slider.addEventListener("mouseleave", () => {
+            isDragging = false;
+            slider.style.cursor = "grab";
+        });
+
+        slider.addEventListener("mouseup", () => {
+            isDragging = false;
+            slider.style.cursor = "grab";
+        });
+
+        slider.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2; // Multiply by 2 for faster scrolling
+            slider.scrollLeft = scrollLeft - walk;
+        });
+
+        // Add touch support for mobile
+        slider.addEventListener(
+            "touchstart",
+            (e) => {
+                isDragging = true;
+                startX = e.touches[0].pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            },
+            { passive: true },
+        );
+
+        slider.addEventListener("touchend", () => {
+            isDragging = false;
+        });
+
+        slider.addEventListener(
+            "touchmove",
+            (e) => {
+                if (!isDragging) return;
+                const x = e.touches[0].pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2;
+                slider.scrollLeft = scrollLeft - walk;
+            },
+            { passive: true },
+        );
+    });
+</script>

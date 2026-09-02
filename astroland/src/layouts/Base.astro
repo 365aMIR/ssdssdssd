@@ -1,0 +1,27 @@
+---
+import "../css/style.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "su00ki",
+  description = "southside/dinero",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

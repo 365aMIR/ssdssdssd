@@ -1,0 +1,75 @@
+---
+// pages/index.astro
+import Base from "../layouts/Base.astro";
+import Hero from "../layouts/Hero.astro";
+import Shopper from "../layouts/Shopper.astro";
+import Wordmark from "../layouts/Wordmark.astro";
+import Radio from "../layouts/Radio.astro";
+import Queue from "../layouts/Queue.astro";
+import Cart from "../layouts/Cart.astro";
+import fs from 'fs';
+import path from 'path';
+
+// Function to read the beats directory and extract metadata from filenames
+function getBeatsFromDirectory() {
+  const beatsDir = path.join(process.cwd(), 'public', 'beats');
+
+  try {
+    // Read all files in the beats directory
+    const files = fs.readdirSync(beatsDir);
+
+    // Filter for MP3 files and create objects with metadata
+    const beats = files
+      .filter(file => file.toLowerCase().endsWith('.mp3'))
+      .map((file) => {
+        // Extract title and tempo from filename
+        // Example format: "GLORIFIED _ @su00ki 140.mp3"
+        const fileNameWithoutExt = file.replace('.mp3', '');
+        const parts = fileNameWithoutExt.split(' ');
+
+        // Try to extract tempo (assuming it's the last part)
+        let tempo = parseInt(parts[parts.length - 1]);
+        if (isNaN(tempo)) {
+          tempo = 0; // Default if we can't parse a tempo
+        }
+
+        // Try to extract title (assuming it's before the @ symbol)
+        let title = fileNameWithoutExt;
+        if (fileNameWithoutExt.includes('@')) {
+          title = fileNameWithoutExt.split('@')[0].trim();
+          title = title.replace(/_/g, '').trim(); // Remove underscores
+        }
+
+        return {
+          title: title,
+          tempo: tempo,
+          file: file, // Raw filename, shown verbatim in the queue menu
+          mp3Url: `/beats/${file}`, // This is the public URL
+        };
+      });
+
+    return beats;
+  } catch (error) {
+    console.error("Error reading beats directory:", error);
+    return [];
+  }
+}
+
+const radioCards = getBeatsFromDirectory();
+---
+
+<Base title="southside/dinero">
+  <main class="dinero">
+    <Hero />
+
+    <Queue radioCards={radioCards} />
+
+    <Cart />
+
+    <Shopper />
+
+    <Wordmark />
+
+    <Radio radioCards={radioCards} />
+  </main>
+</Base>

@@ -1,0 +1,173 @@
+---
+interface QueueProps {
+    radioCards: Array<{
+        title: string;
+        tempo: number;
+        file: string;
+        mp3Url: string;
+    }>;
+}
+
+const { radioCards } = Astro.props as QueueProps;
+---
+
+
+<aside class="offcanvas" id="radio-menu" data-open="false" inert>
+    <img class="offcanvas-tab" src="/img/su00kifriedtext.png" alt="su00ki" />
+    <!-- <h2 class="offcanvas-title">oncoming</h2> -->
+
+    <nav class="offcanvas-tree" aria-label="radio queue">
+        <section class="offcanvas-tree-group">
+            <h3>
+                <button
+                    class="offcanvas-tree-group-toggle"
+                    type="button"
+                    aria-expanded="true"
+                    aria-controls="queue-now"
+                >
+                    <span class="offcanvas-tree-group-mark" aria-hidden="true"
+                    ></span>now playing
+                </button>
+            </h3>
+            <ul class="offcanvas-tree-group-list" id="queue-now">
+                {
+                    radioCards.slice(0, 1).map((card, index) => (
+                        <li class="offcanvas-tree-item is-playing" data-index={index}>
+                            <button type="button" data-skip-to={index}>
+                                {card.file}
+                            </button>
+                        </li>
+                    ))
+                }
+            </ul>
+        </section>
+
+        <section class="offcanvas-tree-group">
+            <h3>
+                <button
+                    class="offcanvas-tree-group-toggle"
+                    type="button"
+                    aria-expanded="true"
+                    aria-controls="queue-next"
+                >
+                    <span class="offcanvas-tree-group-mark" aria-hidden="true"
+                    ></span>up next
+                </button>
+            </h3>
+            <ul class="offcanvas-tree-group-list" id="queue-next">
+                {
+                    radioCards.slice(1).map((card, i) => (
+                        <li class="offcanvas-tree-item" data-index={i + 1}>
+                            <button type="button" data-skip-to={i + 1}>
+                                {card.file}
+                            </button>
+                        </li>
+                    ))
+                }
+            </ul>
+        </section>
+    </nav>
+<!-- 
+    <div class="offcanvas-mark" aria-hidden="true">
+        <img class="offcanvas-mark-star" src="/img/flakka.png" alt="" />
+        <img class="offcanvas-mark-word" src="/img/southsideMetro.svg" alt="" />
+    </div> -->
+</aside>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const menu = document.getElementById("radio-menu");
+        const burger = document.querySelector<HTMLButtonElement>(
+            ".dinero-hero-burger",
+        );
+        if (!menu || !burger) return;
+
+        /* ---------- Open / close ---------- */
+        function setOpen(open: boolean) {
+            if (!menu || !burger) return;
+            menu.dataset.open = String(open);
+            burger.setAttribute("aria-expanded", String(open));
+            // Keeps the closed panel out of the tab order and off screen readers
+            if (open) menu.removeAttribute("inert");
+            else menu.setAttribute("inert", "");
+            // The panel scrolls itself; stop the page scrolling behind it
+            document.body.style.overflow = open ? "hidden" : "";
+        }
+
+        burger.addEventListener("click", () => {
+            setOpen(menu.dataset.open !== "true");
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && menu.dataset.open === "true") {
+                setOpen(false);
+                burger.focus();
+            }
+        });
+
+        /* ---------- Collapsible groups ---------- */
+        menu.querySelectorAll<HTMLButtonElement>(
+            ".offcanvas-tree-group-toggle",
+        ).forEach((toggle) => {
+            toggle.addEventListener("click", () => {
+                const open = toggle.getAttribute("aria-expanded") === "true";
+                toggle.setAttribute("aria-expanded", String(!open));
+                const group = toggle.closest<HTMLElement>(
+                    ".offcanvas-tree-group",
+                );
+                if (group) group.dataset.collapsed = String(open);
+            });
+        });
+
+        /* ---------- Queue mirroring ---------- */
+        const nowList = document.getElementById("queue-now");
+        const nextList = document.getElementById("queue-next");
+
+        // Every <li> keyed by the track's original index, which never changes
+        // even as the radio shuffles its cards around.
+        const items = new Map<string, HTMLElement>();
+        menu.querySelectorAll<HTMLElement>(".offcanvas-tree-item").forEach(
+            (item) => {
+                if (item.dataset.index) items.set(item.dataset.index, item);
+            },
+        );
+
+        // Re-home the list items to match the radio's live card order, so the
+        // first card is always the one sitting under "now playing".
+        function syncQueue() {
+            if (!nowList || !nextList) return;
+            const cards = document.querySelectorAll<HTMLElement>(
+                ".radio-wrapper-card",
+            );
+            cards.forEach((card, i) => {
+                const item = card.dataset.index
+                    ? items.get(card.dataset.index)
+                    : undefined;
+                if (!item) return;
+                // appendChild moves the node, so iterating in card order
+                // rebuilds each list in order
+                (i === 0 ? nowList : nextList).appendChild(item);
+                item.classList.toggle("is-playing", i === 0);
+            });
+        }
+
+        // RadioCard fires this whenever the running order changes
+        document.addEventListener("radio:change", syncQueue);
+        syncQueue();
+
+        /* ---------- Skip ---------- */
+        menu.querySelectorAll<HTMLButtonElement>("[data-skip-to]").forEach(
+            (btn) => {
+                btn.addEventListener("click", () => {
+                    const index = btn.dataset.skipTo;
+                    if (index === undefined) return;
+                    document.dispatchEvent(
+                        new CustomEvent("radio:skip", {
+                            detail: { index: Number(index) },
+                        }),
+                    );
+                });
+            },
+        );
+    });
+</script>
